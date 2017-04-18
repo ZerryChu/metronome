@@ -5,6 +5,7 @@ import java.awt.Component;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
+import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 
 import sun.audio.AudioPlayer;
@@ -32,7 +33,6 @@ public class MyTimer extends Thread {
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
-		Component[] labels = myMetronome.showPanel.getComponents();
 
 		while (true) {
 			try {
@@ -41,11 +41,14 @@ public class MyTimer extends Thread {
                        wait();
                     }
                 }
+				Component[] labels = myMetronome.showPanel.getComponents();
+
 				if (index - 1 == -1)
-					labels[labels.length - 1].setForeground(Color.GRAY);
+					((JLabel) labels[labels.length - 1]).setIcon(new ImageIcon("/Users/zhuzirui/Documents/workspace/new/metronome/src/circle-gray.png"));
 				else
-					labels[index - 1].setForeground(Color.GRAY);
-				labels[index].setForeground(Color.RED);
+					((JLabel) labels[index - 1]).setIcon(new ImageIcon("/Users/zhuzirui/Documents/workspace/new/metronome/src/circle-gray.png"));
+				((JLabel) labels[index]).setIcon(new ImageIcon("/Users/zhuzirui/Documents/workspace/new/metronome/src/circle-black.png"));
+
 				index = (index + 1) % labels.length;
 
 				FileInputStream fileau = new FileInputStream("/Users/zhuzirui/Documents/workspace/new/metronome/src/metronome/dididi.wav");

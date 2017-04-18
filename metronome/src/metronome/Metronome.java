@@ -3,9 +3,11 @@ package metronome;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -36,6 +38,7 @@ public class Metronome extends JFrame {
 	public static boolean isStarted = false;
 	
 	public static void setSpeedPanel() {
+		deceleration.setPreferredSize(new Dimension(60, 30));
 		deceleration.addActionListener(new ActionListener() {
 
 			@Override
@@ -46,6 +49,7 @@ public class Metronome extends JFrame {
 			}
 		});
 
+		acceleration.setPreferredSize(new Dimension(60, 30));
 		acceleration.addActionListener(new ActionListener() {
 
 			@Override
@@ -57,7 +61,9 @@ public class Metronome extends JFrame {
 		});
 
 		speedPanel.setSize(300, 50);
-		// speedArea.setBackground(Color.GRAY);
+		speedArea.setBackground(metronome.getBackground());
+		speedArea.setFont(new Font("Dialog",Font.BOLD, 26));
+		speedArea.setForeground(Color.GRAY);
 		speedPanel.add(deceleration);
 		speedPanel.add(speedArea);
 		speedPanel.add(acceleration);
@@ -69,27 +75,29 @@ public class Metronome extends JFrame {
 	public static void setShowPanel(int num) {
 		showPanel.setPreferredSize(new Dimension(380, 50));
 		for (int i = 0; i < num; i++) {
-			JLabel pace = new JLabel(" * ");
+			JLabel pace = new JLabel();
 			pace.setPreferredSize(new Dimension(40, 40));
-			pace.setBackground(Color.GRAY);
+			pace.setIcon(new ImageIcon("/Users/zhuzirui/Documents/workspace/new/metronome/src/circle-gray.png"));
 			showPanel.add(pace);
 		}
 		metronome.add(showPanel);
 
 	}
 
-	public static void resetShowPanel(int num) {
-		showPanel.removeAll();
-		showPanel.setPreferredSize(new Dimension(380, 50));
-		for (int i = 0; i < num; i++) {
-			JLabel pace = new JLabel(" * ");
+	public static void resetShowPanel(int flag) {
+		if (flag == -1)
+			showPanel.remove(showPanel.getComponentCount()-1);
+		else if (flag == 1){
+			JLabel pace = new JLabel();
 			pace.setPreferredSize(new Dimension(40, 40));
-			pace.setBackground(Color.GRAY);
+			pace.setIcon(new ImageIcon("/Users/zhuzirui/Documents/workspace/new/metronome/src/circle-gray.png"));
 			showPanel.add(pace);
 		}
+		showPanel.repaint();
 	}
 	
 	public static void setSettingPanel() {
+		decreaseBeats.setPreferredSize(new Dimension(50, 30));
 		decreaseBeats.addActionListener(new ActionListener() {
 			
 			@Override
@@ -99,10 +107,11 @@ public class Metronome extends JFrame {
 				if (beat_num_now < 1)
 					return;
 				beats.setText(String.valueOf(beat_num_now));
-				resetShowPanel(beat_num_now);
+				resetShowPanel(-1);
 			}
 		});
 		
+		addBeats.setPreferredSize(new Dimension(50, 30));
 		addBeats.addActionListener(new ActionListener() {
 			
 			@Override
@@ -112,24 +121,26 @@ public class Metronome extends JFrame {
 				if (beat_num_now > 8)
 					return;
 				beats.setText(String.valueOf(beat_num_now));
-				resetShowPanel(beat_num_now);
+				resetShowPanel(1);
 
 			}
 		});
 		
+		decreaseNote.setPreferredSize(new Dimension(50, 30));
 		decreaseNote.addActionListener(new ActionListener() {
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				// TODO Auto-generated method stub
 				int note_num = Integer.valueOf(note.getText());
-				if (note_num == 1)
+				if (note_num == 4)
 					return;
 				note.setText(String.valueOf(note_num / 2));
 
 			}
 		});
 		
+		increaseNote.setPreferredSize(new Dimension(50, 30));
 		increaseNote.addActionListener(new ActionListener() {
 			
 			@Override
@@ -142,6 +153,14 @@ public class Metronome extends JFrame {
 
 			}
 		});
+		
+		beats.setBackground(metronome.getBackground());
+		beats.setFont(new Font("Dialog",Font.PLAIN, 20));
+		beats.setForeground(Color.BLACK);;
+		note.setBackground(metronome.getBackground());
+		note.setFont(new Font("Dialog",Font.PLAIN, 20));
+		note.setForeground(Color.BLACK);
+		
 		settingPanel.setSize(300, 50);
 		settingPanel.add(decreaseBeats);
 		settingPanel.add(addBeats);
