@@ -54,6 +54,7 @@ public class MyTimer extends Thread {
 				FileInputStream fileau = new FileInputStream("/Users/zhuzirui/Documents/workspace/new/metronome/src/metronome/dididi.wav");
 				AudioStream as = new AudioStream(fileau);
 				AudioPlayer.player.start(as);
+				
 				long time = 60000 / Integer.valueOf(myMetronome.speedArea.getText());
 				if (Integer.valueOf(myMetronome.note.getText()) == 8) {
 					time /= 2;

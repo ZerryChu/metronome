@@ -6,6 +6,9 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -13,6 +16,9 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
+
+import sun.audio.AudioPlayer;
+import sun.audio.AudioStream;
 
 public class Metronome extends JFrame {
 	public static Metronome metronome = new Metronome();
@@ -31,12 +37,16 @@ public class Metronome extends JFrame {
 	public static JButton increaseNote = new JButton(" + ");
 	public static JTextArea beats = new JTextArea("4");
 	public static JTextArea note = new JTextArea("4");
-	
-	public static JButton runButton = new JButton("run");
-	public static JButton stopButton = new JButton("stop");
+
+	public static JButton startOrStopButton = new JButton("start");
 	public static MyTimer myTimer = new MyTimer(metronome);
 	public static boolean isStarted = false;
-	
+
+	public static JButton startOrStopRecording = new JButton("record");
+	public static JButton playSong = new JButton("play");
+	public static AudioStream as = null;
+	public static MyAudioRecorder audioRecorder = null;
+
 	public static void setSpeedPanel() {
 		deceleration.setPreferredSize(new Dimension(60, 30));
 		deceleration.addActionListener(new ActionListener() {
@@ -62,7 +72,7 @@ public class Metronome extends JFrame {
 
 		speedPanel.setSize(300, 50);
 		speedArea.setBackground(metronome.getBackground());
-		speedArea.setFont(new Font("Dialog",Font.BOLD, 26));
+		speedArea.setFont(new Font("Dialog", Font.BOLD, 26));
 		speedArea.setForeground(Color.GRAY);
 		speedPanel.add(deceleration);
 		speedPanel.add(speedArea);
@@ -86,8 +96,8 @@ public class Metronome extends JFrame {
 
 	public static void resetShowPanel(int flag) {
 		if (flag == -1)
-			showPanel.remove(showPanel.getComponentCount()-1);
-		else if (flag == 1){
+			showPanel.remove(showPanel.getComponentCount() - 1);
+		else if (flag == 1) {
 			JLabel pace = new JLabel();
 			pace.setPreferredSize(new Dimension(40, 40));
 			pace.setIcon(new ImageIcon("/Users/zhuzirui/Documents/workspace/new/metronome/src/circle-gray.png"));
@@ -95,11 +105,11 @@ public class Metronome extends JFrame {
 		}
 		showPanel.repaint();
 	}
-	
+
 	public static void setSettingPanel() {
 		decreaseBeats.setPreferredSize(new Dimension(50, 30));
 		decreaseBeats.addActionListener(new ActionListener() {
-			
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				// TODO Auto-generated method stub
@@ -110,10 +120,10 @@ public class Metronome extends JFrame {
 				resetShowPanel(-1);
 			}
 		});
-		
+
 		addBeats.setPreferredSize(new Dimension(50, 30));
 		addBeats.addActionListener(new ActionListener() {
-			
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				// TODO Auto-generated method stub
@@ -125,10 +135,10 @@ public class Metronome extends JFrame {
 
 			}
 		});
-		
+
 		decreaseNote.setPreferredSize(new Dimension(50, 30));
 		decreaseNote.addActionListener(new ActionListener() {
-			
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				// TODO Auto-generated method stub
@@ -139,10 +149,10 @@ public class Metronome extends JFrame {
 
 			}
 		});
-		
+
 		increaseNote.setPreferredSize(new Dimension(50, 30));
 		increaseNote.addActionListener(new ActionListener() {
-			
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				// TODO Auto-generated method stub
@@ -153,14 +163,15 @@ public class Metronome extends JFrame {
 
 			}
 		});
-		
+
 		beats.setBackground(metronome.getBackground());
-		beats.setFont(new Font("Dialog",Font.PLAIN, 20));
-		beats.setForeground(Color.BLACK);;
+		beats.setFont(new Font("Dialog", Font.PLAIN, 20));
+		beats.setForeground(Color.BLACK);
+		;
 		note.setBackground(metronome.getBackground());
-		note.setFont(new Font("Dialog",Font.PLAIN, 20));
+		note.setFont(new Font("Dialog", Font.PLAIN, 20));
 		note.setForeground(Color.BLACK);
-		
+
 		settingPanel.setSize(300, 50);
 		settingPanel.add(decreaseBeats);
 		settingPanel.add(addBeats);
@@ -174,48 +185,96 @@ public class Metronome extends JFrame {
 	}
 
 	public static void setOperationPanel() {
-		
-		runButton.addActionListener(new ActionListener() {
-			
+
+		startOrStopButton.setIcon(new ImageIcon("/Users/zhuzirui/Documents/workspace/new/metronome/src/begin.png"));
+		startOrStopButton.addActionListener(new ActionListener() {
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				// TODO Auto-generated method stub
-				if (isStarted == false) {
-					myTimer.start();
-					isStarted = true;
+				if (startOrStopButton.getText().equals("start")) {
+					if (isStarted == false) {
+						myTimer.start();
+						startOrStopButton.setIcon(
+								new ImageIcon("/Users/zhuzirui/Documents/workspace/new/metronome/src/stop.png"));
+						isStarted = true;
+					} else {
+						myTimer.resumeTimer();
+					}
+					startOrStopButton
+							.setIcon(new ImageIcon("/Users/zhuzirui/Documents/workspace/new/metronome/src/stop.png"));
+					startOrStopButton.setText("stop");
 				} else {
-					myTimer.resumeTimer();
+					myTimer.stopTimer();
+					startOrStopButton
+							.setIcon(new ImageIcon("/Users/zhuzirui/Documents/workspace/new/metronome/src/begin.png"));
+					startOrStopButton.setText("start");
 				}
 			}
 		});
-		
-		stopButton.addActionListener(new ActionListener() {
-			
+
+		startOrStopRecording.setIcon(new ImageIcon("/Users/zhuzirui/Documents/workspace/new/metronome/src/start.png"));
+		startOrStopRecording.addActionListener(new ActionListener() {
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				// TODO Auto-generated method stub
-				myTimer.stopTimer();
+				if (startOrStopRecording.getText().equals("record")) {
+					audioRecorder = new MyAudioRecorder();
+					audioRecorder.start();
+					startOrStopRecording
+							.setIcon(new ImageIcon("/Users/zhuzirui/Documents/workspace/new/metronome/src/stop.png"));
+					startOrStopRecording.setText("end");
+				} else {
+					audioRecorder.stopRecording();
+					startOrStopRecording
+							.setIcon(new ImageIcon("/Users/zhuzirui/Documents/workspace/new/metronome/src/start.png"));
+					startOrStopRecording.setText("record");
+				}
 			}
 		});
-		
-		operationPanel.setSize(200, 50);
-		operationPanel.add(runButton);
-		operationPanel.add(stopButton);
+
+		playSong.setIcon(new ImageIcon("/Users/zhuzirui/Documents/workspace/new/metronome/src/sound.png"));
+		playSong.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// TODO Auto-generated method stub
+				try {
+					if (playSong.getText().equals("stop")) {
+						AudioPlayer.player.stop(as);
+						playSong.setText("play");
+					} else {
+						as = new AudioStream(new FileInputStream("/Users/zhuzirui/Documents/workspace/new/metronome/src/metronome/record.wav"));
+						AudioPlayer.player.start(as);
+						playSong.setText("stop");
+					}
+				} catch (Exception _e) {
+					// TODO Auto-generated catch block
+					_e.printStackTrace();
+				}
+			}
+		});
+
+		// operationPanel.setSize(200, 50);
+		operationPanel.add(startOrStopButton);
+		operationPanel.add(startOrStopRecording);
+		operationPanel.add(playSong);
 		metronome.add(operationPanel);
 	}
-	
+
 	public static void main(String[] args) {
 		metronome.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // 关闭按钮的动作为退出窗口
-		metronome.setSize(400, 220);
+		metronome.setSize(400, 250);
 		metronome.setLayout(new FlowLayout());
 
 		setSpeedPanel();
 		setShowPanel(4);
 		setSettingPanel();
 		setOperationPanel();
-		
+
 		metronome.setVisible(true);
-		
+
 	}
 
 }
